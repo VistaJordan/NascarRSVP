@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>RSVP Admin — Seamless FM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --navy:#0A1628;
+    --navy-mid:#0D2137;
+    --blue:#35B8F3;
+    --blue-dark:#1A9FD4;
+    --blue-light:#7FD5F8;
+    --white:#FFFFFF;
+    --teal:#00A878;
+    --mut:rgba(255,255,255,.66);
+    --faint:rgba(255,255,255,.5);
+    --line:rgba(255,255,255,.1);
+    --card:#070E18;
+    --font-body:'Barlow',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    --font-display:'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:var(--font-body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(18px,3vw,36px) 60px;}
+
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:20px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:16px;}
+  .brand img{height:52px;width:auto;display:block;}
+  .brand-title{
+    font-family:var(--font-display);font-weight:800;font-size:22px;
+    letter-spacing:.05em;text-transform:uppercase;line-height:1;
+  }
+  .brand-title small{
+    display:block;font-family:var(--font-body);font-weight:600;
+    font-size:10px;letter-spacing:.22em;color:var(--blue);margin-top:5px;
+  }
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .abtn{
+    font-family:var(--font-body);font-size:12px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;
+    background:none;border:1px solid var(--line);color:var(--mut);
+    padding:9px 18px;cursor:pointer;
+    transition:color .15s,border-color .15s,background-color .15s;
+  }
+  .abtn:hover{color:var(--white);border-color:rgba(255,255,255,.35);}
+  .abtn.primary{border-color:var(--blue);color:var(--blue);}
+  .abtn.primary:hover{background:var(--blue);color:var(--black);}
+  .abtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+
+  /* key gate */
+  .gate{
+    max-width:420px;margin:12vh auto 0;
+    background:var(--card);border:1px solid var(--line);border-top:3px solid var(--blue);
+    padding:34px 34px 30px;
+  }
+  .gate h1{
+    font-family:var(--font-display);font-weight:800;font-size:30px;
+    letter-spacing:.03em;text-transform:uppercase;margin-bottom:6px;
+  }
+  .gate p{color:var(--mut);font-size:14px;margin-bottom:20px;}
+  .gate label{
+    display:block;font-size:11px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--mut);margin-bottom:8px;
+  }
+  .gate input{
+    width:100%;background:var(--black);border:1px solid rgba(255,255,255,.25);
+    color:var(--white);font:inherit;padding:12px 14px;margin-bottom:16px;
+  }
+  .gate input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(53,184,243,.3);}
+  .gate .err{color:#F08483;font-size:13px;margin:-6px 0 14px;min-height:18px;}
+  .gate button{
+    width:100%;background:var(--blue);border:0;color:var(--navy);
+    font-family:var(--font-display);font-weight:800;font-size:16px;
+    letter-spacing:.14em;text-transform:uppercase;padding:13px;cursor:pointer;
+  }
+  .gate button:hover{background:var(--blue-dark);}
+  .gate button:focus-visible{outline:none;box-shadow:0 0 0 3px var(--card),0 0 0 6px var(--blue);}
+
+  /* stat tiles */
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;margin:26px 0;
+  }
+  .tile{
+    background:var(--card);border:1px solid var(--line);
+    padding:18px 20px 15px;
+  }
+  .tile .t-label{
+    font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);
+  }
+  .tile .t-num{
+    font-family:var(--font-display);font-weight:800;font-size:44px;line-height:1.05;
+    font-variant-numeric:tabular-nums;margin-top:4px;
+  }
+  .tile .t-sub{font-size:12px;color:var(--faint);margin-top:2px;min-height:16px;}
+  .tile.yes{border-top:3px solid var(--teal);}
+  .tile.no{border-top:3px solid rgba(255,255,255,.28);}
+  .tile.diet{border-top:3px solid var(--blue);}
+  .tile.assist{border-top:3px solid var(--blue-dark);}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--card);}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1080px;}
+  th{
+    position:sticky;top:0;background:var(--navy);
+    text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--mut);padding:11px 14px;white-space:nowrap;
+    border-bottom:1px solid var(--line);
+  }
+  td{
+    padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.06);
+    color:var(--mut);vertical-align:top;max-width:260px;overflow-wrap:break-word;
+  }
+  td.strong{color:var(--white);font-weight:600;white-space:nowrap;}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr:hover td{background:rgba(53,184,243,.04);}
+  .badge{
+    display:inline-block;font-size:10px;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;padding:4px 9px 3px;white-space:nowrap;
+  }
+  .badge.yes{background:rgba(0,168,120,.16);color:#3ED9A4;}
+  .badge.no{background:rgba(255,255,255,.1);color:var(--mut);}
+  .del{
+    background:none;border:1px solid rgba(226,75,74,.4);color:#F08483;
+    font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 10px;cursor:pointer;
+  }
+  .del:hover{background:rgba(226,75,74,.16);}
+  .del:focus-visible{outline:2px solid #F08483;outline-offset:2px;}
+
+  .state{
+    padding:44px 20px;text-align:center;color:var(--faint);font-size:14.5px;
+  }
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <img src="logo.webp" alt="Seamless — Facility Management" width="456" height="200">
+      <div class="brand-title">RSVP Admin
+        <small>NASCAR Race Weekend · Homestead-Miami · Nov 6–8, 2026</small>
+      </div>
+    </div>
+    <div class="top-actions" id="topActions" hidden>
+      <button class="abtn primary" id="refreshBtn" type="button">Refresh</button>
+      <button class="abtn" id="csvBtn" type="button">Export CSV</button>
+      <button class="abtn" id="signoutBtn" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <!-- KEY GATE -->
+  <div class="gate" id="gate">
+    <h1>Admin access</h1>
+    <p>Enter the admin key to view responses. It's the <code style="color:var(--blue-light)">ADMIN_KEY</code> set in the Vercel project.</p>
+    <form id="gateForm">
+      <label for="keyInput">Admin key</label>
+      <input type="password" id="keyInput" autocomplete="current-password" required>
+      <p class="err" id="gateErr"></p>
+      <button type="submit">Open dashboard</button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD -->
+  <main id="dash" hidden>
+    <div class="stats">
+      <div class="tile yes">
+        <div class="t-label">Locked in</div>
+        <div class="t-num" id="statYes">–</div>
+        <div class="t-sub">said yes</div>
+      </div>
+      <div class="tile no">
+        <div class="t-label">Can't make it</div>
+        <div class="t-num" id="statNo">–</div>
+        <div class="t-sub">said no</div>
+      </div>
+      <div class="tile diet">
+        <div class="t-label">Dietary needs</div>
+        <div class="t-num" id="statDiet">–</div>
+        <div class="t-sub">need the caterer's attention</div>
+      </div>
+      <div class="tile assist">
+        <div class="t-label">Assistance requests</div>
+        <div class="t-num" id="statAssist">–</div>
+        <div class="t-sub">asked for accommodations</div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Received</th><th>Name</th><th>Company</th><th>Role</th><th>Phone</th>
+            <th>Email</th><th>RSVP</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+      <div class="state" id="tblState" hidden></div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var KEY_STORE = 'sfm-admin-key';
+  var gate = document.getElementById('gate');
+  var gateForm = document.getElementById('gateForm');
+  var gateErr = document.getElementById('gateErr');
+  var keyInput = document.getElementById('keyInput');
+  var dash = document.getElementById('dash');
+  var topActions = document.getElementById('topActions');
+  var tblBody = document.getElementById('tblBody');
+  var tblState = document.getElementById('tblState');
+  var rowsCache = [];
+
+  function getKey(){
+    try { return sessionStorage.getItem(KEY_STORE) || ''; } catch(e){ return ''; }
+  }
+  function setKey(k){
+    try { if (k) sessionStorage.setItem(KEY_STORE, k); else sessionStorage.removeItem(KEY_STORE); } catch(e){}
+  }
+
+  function showGate(msg){
+    setKey('');
+    dash.hidden = true;
+    topActions.hidden = true;
+    gate.hidden = false;
+    gateErr.textContent = msg || '';
+    keyInput.focus();
+  }
+  function showDash(){
+    gate.hidden = true;
+    dash.hidden = false;
+    topActions.hidden = false;
+  }
+
+  function fmtTime(iso){
+    var d = new Date(iso);
+    return isNaN(d) ? String(iso) : d.toLocaleString(undefined, {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function render(rows){
+    rowsCache = rows;
+    var yes = 0, no = 0, diet = 0, assist = 0;
+    rows.forEach(function(r){
+      if (r.rsvp === 'yes') yes++; else no++;
+      if ((r.dietary && r.dietary !== 'none') || (r.dietary_notes && r.dietary_notes.trim())) diet++;
+      if (r.assistance && r.assistance.trim()) assist++;
+    });
+    document.getElementById('statYes').textContent = yes;
+    document.getElementById('statNo').textContent = no;
+    document.getElementById('statDiet').textContent = diet;
+    document.getElementById('statAssist').textContent = assist;
+
+    if (!rows.length) {
+      tblBody.innerHTML = '';
+      tblState.hidden = false;
+      tblState.textContent = 'No responses yet — the grid is empty. Check back after the invite goes out.';
+      return;
+    }
+    tblState.hidden = true;
+    tblBody.innerHTML = rows.map(function(r){
+      return '<tr>' +
+        '<td class="num">' + esc(fmtTime(r.created_at)) + '</td>' +
+        '<td class="strong">' + esc(r.first_name + ' ' + r.last_name) + '</td>' +
+        '<td>' + esc(r.company) + '</td>' +
+        '<td>' + esc(r.role) + '</td>' +
+        '<td class="num">' + esc(r.phone) + '</td>' +
+        '<td>' + esc(r.email) + '</td>' +
+        '<td><span class="badge ' + (r.rsvp === 'yes' ? 'yes">Locked in' : 'no">Declined') + '</span></td>' +
+        '<td>' + esc(r.dietary || '—') + '</td>' +
+        '<td>' + esc(r.dietary_notes || '—') + '</td>' +
+        '<td>' + esc(r.assistance || '—') + '</td>' +
+        '<td><button class="del" type="button" data-id="' + parseInt(r.id, 10) + '">Delete</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function load(){
+    var key = getKey();
+    if (!key) { showGate(''); return; }
+    tblState.hidden = false;
+    tblState.textContent = 'Loading…';
+    fetch('/api/admin/rsvps', { headers: { 'Authorization': 'Bearer ' + key } })
+      .then(function(r){
+        if (r.status === 401) { showGate('That key was rejected — try again.'); throw new Error('unauthorized'); }
+        if (!r.ok) return r.json().then(function(j){ throw new Error(j.error || 'Request failed'); });
+        return r.json();
+      })
+      .then(function(j){ showDash(); render(j.rows || []); })
+      .catch(function(err){
+        if (err.message === 'unauthorized') return;
+        showDash();
+        tblBody.innerHTML = '';
+        tblState.hidden = false;
+        tblState.textContent = 'Could not load responses: ' + err.message;
+      });
+  }
+
+  gateForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    setKey(keyInput.value.trim());
+    keyInput.value = '';
+    load();
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('signoutBtn').addEventListener('click', function(){ showGate(''); });
+
+  tblBody.addEventListener('click', function(e){
+    var btn = e.target.closest('.del');
+    if (!btn) return;
+    if (!window.confirm('Delete this response for good?')) return;
+    fetch('/api/admin/rsvps?id=' + encodeURIComponent(btn.getAttribute('data-id')), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getKey() }
+    }).then(function(r){
+      if (r.status === 401) { showGate('That key was rejected — try again.'); return; }
+      load();
+    }).catch(function(){ load(); });
+  });
+
+  // CSV export — quotes every field, doubles inner quotes, and neutralizes
+  // formula-leading characters so a cell can't execute in Excel/Sheets
+  function csvCell(v){
+    var s = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  document.getElementById('csvBtn').addEventListener('click', function(){
+    var head = ['received','first_name','last_name','company','role','phone','email','rsvp','dietary','dietary_notes','assistance'];
+    var lines = [head.join(',')].concat(rowsCache.map(function(r){
+      return [r.created_at, r.first_name, r.last_name, r.company, r.role, r.phone,
+              r.email, r.rsvp, r.dietary, r.dietary_notes, r.assistance].map(csvCell).join(',');
+    }));
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'rsvps-homestead-2026.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+
+  load();
+})();
+</script>
+
+</body>
+</html>

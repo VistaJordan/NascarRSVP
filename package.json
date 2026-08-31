@@ -1,0 +1,10 @@
+{
+  "name": "nascar-rsvp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Seamless FM — NASCAR Race Weekend RSVP page, API, and admin view",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}

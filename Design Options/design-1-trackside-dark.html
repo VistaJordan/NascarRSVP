@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trackside Dark — Seamless FM RSVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============ RESET ============ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  input, select, textarea, button { font: inherit; color: inherit; }
+  img, svg { display: block; max-width: 100%; }
+
+  /* ============ TOKENS ============ */
+  :root {
+    --black: #000000;
+    --navy: #0A1628;
+    --navy-mid: #0D2137;
+    --field: #000000;
+    --blue: #35B8F3;
+    --blue-dark: #1A9FD4;
+    --blue-light: #7FD5F8;
+    --white: #FFFFFF;
+    --ink-90: rgba(255,255,255,0.92);
+    --ink-70: rgba(255,255,255,0.72);
+    --ink-55: rgba(255,255,255,0.58);
+    --line: rgba(255,255,255,0.14);
+    --line-soft: rgba(255,255,255,0.09);
+    --ring: 0 0 0 3px rgba(53,184,243,0.30);
+    --radius: 6px;
+    --sp-1: 8px;  --sp-2: 16px; --sp-3: 24px;
+    --sp-4: 32px; --sp-5: 40px; --sp-6: 56px; --sp-7: 72px;
+    --cond: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+    --body-font: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* ============ PAGE ============ */
+  body {
+    background: var(--black);
+    color: var(--ink-90);
+    font-family: var(--body-font);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* Subtle radial blue glow, top-right corner — the 5% */
+  body::before {
+    content: "";
+    position: fixed;
+    top: -22vh; right: -18vw;
+    width: 70vw; height: 70vh;
+    min-width: 480px; min-height: 380px;
+    background: radial-gradient(closest-side, rgba(53,184,243,0.13), rgba(53,184,243,0.045) 55%, transparent 78%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { color: var(--blue-light); text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 2px; }
+
+  /* ============ HEADER / LOGO ============ */
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-4) 0 var(--sp-2);
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon { width: 34px; height: 34px; flex: 0 0 auto; }
+  .logo-word {
+    font-family: var(--cond);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: 0.045em;
+    line-height: 1;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+  .logo-sub {
+    font-family: var(--body-font);
+    font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-top: 4px;
+  }
+  .header-tag {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-55);
+    white-space: nowrap;
+  }
+
+  /* ============ HERO ============ */
+  .hero { padding: var(--sp-6) 0 var(--sp-5); }
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--body-font);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.30em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: var(--sp-3);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 40px; height: 2px;
+    background: var(--blue);
+    flex: 0 0 auto;
+  }
+  h1 {
+    font-family: var(--cond);
+    font-weight: 800;
+    font-size: clamp(52px, 10vw, 88px);
+    line-height: 0.94;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    color: var(--white);
+    max-width: 12ch;
+  }
+  h1 .blue { color: var(--blue); }
+  .hero-copy {
+    margin-top: var(--sp-3);
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--ink-70);
+    max-width: 46ch;
+  }
+  .hero-copy strong { font-weight: 600; color: var(--ink-90); }
+
+  /* ============ META ROW (brand-kit hero-meta) ============ */
+  .meta {
+    margin-top: var(--sp-5);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+  }
+  .meta-cell {
+    padding: 18px 20px;
+    border-left: 1px solid var(--line);
+    min-width: 0;
+  }
+  .meta-cell:first-child { border-left: 0; }
+  .meta-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-55);
+    margin-bottom: 6px;
+  }
+  .meta-value {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  /* ============ CHECKERED DIVIDER (used once) ============ */
+  .checker {
+    height: 16px;
+    margin: var(--sp-6) 0;
+    background: repeating-conic-gradient(#FFFFFF 0% 25%, transparent 0% 50%);
+    background-size: 16px 16px;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  }
+
+  /* ============ FORM CARD ============ */
+  .card {
+    background: var(--navy);
+    border: 1px solid var(--line-soft);
+    border-top: 2px solid var(--blue);
+    border-radius: 8px;
+    padding: var(--sp-6) var(--sp-6) var(--sp-5);
+    margin-bottom: var(--sp-7);
+  }
+
+  fieldset { border: 0; min-width: 0; }
+  .section { margin-bottom: var(--sp-6); }
+  .section:last-of-type { margin-bottom: var(--sp-5); }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: var(--sp-3);
+  }
+  .section-num {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--blue);
+  }
+  .section-title {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .section-hint {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-55);
+    white-space: nowrap;
+  }
+
+  /* ---- RSVP choice ---- */
+  .rsvp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
+  }
+  .rsvp-option { position: relative; display: block; cursor: pointer; }
+  .rsvp-option input {
+    position: absolute;
+    opacity: 0;
+    width: 1px; height: 1px;
+  }
+  .rsvp-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px;
+    min-height: 96px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+  }
+  .rsvp-option:hover .rsvp-card { border-color: rgba(255,255,255,0.32); }
+  .rsvp-dot {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    margin-top: 2px;
+    border: 2px solid var(--ink-55);
+    border-radius: 50%;
+    position: relative;
+    transition: border-color .15s ease;
+  }
+  .rsvp-dot::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--blue);
+    transform: scale(0);
+    transition: transform .15s ease;
+  }
+  .rsvp-text { min-width: 0; }
+  .rsvp-title {
+    display: block;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 21px;
+    line-height: 1.1;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .rsvp-sub {
+    display: block;
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-55);
+  }
+  .rsvp-option input:checked ~ .rsvp-card {
+    border-color: var(--blue);
+    background: rgba(53,184,243,0.07);
+  }
+  .rsvp-option input:checked ~ .rsvp-card .rsvp-dot { border-color: var(--blue); }
+  .rsvp-option input:checked ~ .rsvp-card .rsvp-dot::after { transform: scale(1); }
+  .rsvp-option input:checked ~ .rsvp-card .rsvp-sub { color: var(--ink-70); }
+  .rsvp-option input:focus-visible ~ .rsvp-card {
+    border-color: var(--blue);
+    box-shadow: var(--ring);
+  }
+
+  /* ---- Fields ---- */
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3) var(--sp-2);
+  }
+  .field { min-width: 0; }
+  .field.full { grid-column: 1 / -1; }
+  label.micro, .micro-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-70);
+    margin-bottom: 8px;
+  }
+  .req { color: var(--blue); }
+  .optional-note {
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--ink-55);
+  }
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--white);
+    padding: 14px 16px;
+    min-height: 50px;
+    font-size: 16px;
+    font-weight: 400;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input::placeholder, textarea::placeholder {
+    color: rgba(255,255,255,0.52);
+    font-weight: 300;
+  }
+  input:hover, select:hover, textarea:hover { border-color: rgba(255,255,255,0.30); }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: var(--ring);
+  }
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%2335B8F3' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+  }
+  select option { background: var(--navy); color: var(--white); }
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  /* ---- Submit ---- */
+  .submit-row { margin-top: var(--sp-2); }
+  .btn {
+    display: block;
+    width: 100%;
+    background: var(--blue);
+    color: var(--black);
+    border: 0;
+    border-radius: var(--radius);
+    padding: 19px 24px;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color .15s ease, transform .1s ease, box-shadow .15s ease;
+  }
+  .btn:hover { background: var(--blue-dark); }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--black), 0 0 0 6px var(--blue);
+  }
+  .btn .arrow { display: inline-block; margin-left: 10px; }
+
+  .privacy {
+    margin-top: var(--sp-3);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-55);
+    text-align: center;
+    max-width: 44ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ============ FOOTER ============ */
+  .site-footer {
+    border-top: 1px solid var(--line-soft);
+    padding: var(--sp-3) 0 var(--sp-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .footer-brand {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--ink-70);
+  }
+  .footer-tag {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-55);
+  }
+  .footer-link {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 720px) {
+    .card { padding: var(--sp-4) var(--sp-3); }
+    .meta { grid-template-columns: 1fr 1fr; }
+    .meta-cell:nth-child(3) { border-left: 0; }
+    .meta-cell:nth-child(n+3) { border-top: 1px solid var(--line); }
+  }
+  @media (max-width: 560px) {
+    .site-header { padding-top: var(--sp-3); }
+    .header-tag { display: none; }
+    .hero { padding: var(--sp-5) 0 var(--sp-4); }
+    .checker { margin: var(--sp-5) 0; }
+    .rsvp-grid { grid-template-columns: 1fr; }
+    .field-grid { grid-template-columns: 1fr; }
+    .section-hint { display: none; }
+    .site-footer { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ======= HEADER ======= -->
+  <header class="site-header">
+    <div class="logo" aria-label="Seamless FM — Facility Management">
+      <svg class="logo-icon" viewBox="0 0 64 64" role="img" aria-hidden="true" focusable="false">
+        <path d="M8 4 H56 V18 H22 V25 H56 V60 H8 V46 H42 V39 H8 Z" fill="#35B8F3"/>
+      </svg>
+      <div>
+        <div class="logo-word">Seamless</div>
+        <div class="logo-sub">Facility Management</div>
+      </div>
+    </div>
+    <div class="header-tag">Client Hospitality &middot; 2026</div>
+  </header>
+
+  <!-- ======= HERO ======= -->
+  <section class="hero">
+    <p class="eyebrow">Race Weekend Invitation</p>
+    <h1>You're on the <span class="blue">guest</span> list</h1>
+    <p class="hero-copy">
+      Three days of green flags, great seats, and full hospitality at
+      Homestead-Miami Speedway &mdash; <strong>our way of saying thanks.</strong>
+      Tell us you're in.
+    </p>
+
+    <div class="meta" role="group" aria-label="Event details">
+      <div class="meta-cell">
+        <div class="meta-label">Event</div>
+        <div class="meta-value">NASCAR Race Weekend</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Circuit</div>
+        <div class="meta-value">Homestead-Miami Speedway, Homestead, FL</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Dates</div>
+        <div class="meta-value">November 6&ndash;8, 2026</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Hosted by</div>
+        <div class="meta-value">Seamless FM</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= CHECKERED DIVIDER ======= -->
+  <div class="checker" aria-hidden="true"></div>
+
+  <!-- ======= FORM CARD ======= -->
+  <main>
+    <form class="card" action="#" method="post">
+
+      <!-- 01 · RSVP -->
+      <fieldset class="section">
+        <legend class="section-head" style="display:flex; width:100%;">
+          <span class="section-num">01</span>
+          <span class="section-title">Your call</span>
+          <span class="section-hint">Pick one</span>
+        </legend>
+        <div class="rsvp-grid">
+          <label class="rsvp-option">
+            <input type="radio" name="attending" value="yes" checked>
+            <span class="rsvp-card">
+              <span class="rsvp-dot" aria-hidden="true"></span>
+              <span class="rsvp-text">
+                <span class="rsvp-title">Yes, I'll be there</span>
+                <span class="rsvp-sub">Save my spot on the grid.</span>
+              </span>
+            </span>
+          </label>
+          <label class="rsvp-option">
+            <input type="radio" name="attending" value="no">
+            <span class="rsvp-card">
+              <span class="rsvp-dot" aria-hidden="true"></span>
+              <span class="rsvp-text">
+                <span class="rsvp-title">Sorry, can't make it</span>
+                <span class="rsvp-sub">I'll catch the next one.</span>
+              </span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- 02 · DETAILS -->
+      <fieldset class="section">
+        <legend class="section-head" style="display:flex; width:100%;">
+          <span class="section-num">02</span>
+          <span class="section-title">Your details</span>
+          <span class="section-hint">So we can reach you</span>
+        </legend>
+        <div class="field-grid">
+          <div class="field">
+            <label class="micro" for="first-name">First name <span class="req">*</span></label>
+            <input type="text" id="first-name" name="first_name" autocomplete="given-name" placeholder="Alex" required>
+          </div>
+          <div class="field">
+            <label class="micro" for="last-name">Last name <span class="req">*</span></label>
+            <input type="text" id="last-name" name="last_name" autocomplete="family-name" placeholder="Rivera" required>
+          </div>
+          <div class="field">
+            <label class="micro" for="company">Company name</label>
+            <input type="text" id="company" name="company" autocomplete="organization" placeholder="Your company">
+          </div>
+          <div class="field">
+            <label class="micro" for="role">Position / Role</label>
+            <input type="text" id="role" name="role" autocomplete="organization-title" placeholder="Facilities Director">
+          </div>
+          <div class="field">
+            <label class="micro" for="phone">Phone number <span class="req">*</span></label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="(305) 555-0117" required>
+          </div>
+          <div class="field">
+            <label class="micro" for="email">Email address <span class="req">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@company.com" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 03 · DIETARY -->
+      <fieldset class="section">
+        <legend class="section-head" style="display:flex; width:100%;">
+          <span class="section-num">03</span>
+          <span class="section-title">At the table</span>
+          <span class="section-hint">Hospitality suite catering</span>
+        </legend>
+        <div class="field-grid">
+          <div class="field">
+            <label class="micro" for="dietary">Dietary requirements</label>
+            <select id="dietary" name="dietary">
+              <option value="none" selected>No restrictions</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="gluten-free">Gluten-free</option>
+              <option value="halal">Halal</option>
+              <option value="kosher">Kosher</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="micro" for="dietary-notes">Anything else we should know? <span class="optional-note">&middot; Optional</span></label>
+            <input type="text" id="dietary-notes" name="dietary_notes" placeholder="Allergies, preferences&hellip;">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 04 · ASSISTANCE -->
+      <fieldset class="section">
+        <legend class="section-head" style="display:flex; width:100%;">
+          <span class="section-num">04</span>
+          <span class="section-title">Anything you need</span>
+          <span class="section-hint">Optional</span>
+        </legend>
+        <div class="field">
+          <label class="micro" for="assistance">Assistance needed <span class="optional-note">&middot; Optional</span></label>
+          <textarea id="assistance" name="assistance" placeholder="Mobility access, hearing assistance, or any other accommodations &mdash; tell us here and we'll have it handled before you arrive."></textarea>
+        </div>
+      </fieldset>
+
+      <!-- SUBMIT -->
+      <div class="submit-row">
+        <button class="btn" type="submit">Confirm my RSVP <span class="arrow" aria-hidden="true">&rarr;</span></button>
+        <p class="privacy">Your details stay private. We use them only to coordinate race weekend &mdash; nothing else.</p>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- ======= FOOTER ======= -->
+  <footer class="site-footer">
+    <span class="footer-brand">Seamless FM</span>
+    <span class="footer-tag">Fast response. Qualified techs. Done right.</span>
+    <a class="footer-link" href="https://www.seamlessfm.com">www.seamlessfm.com</a>
+  </footer>
+
+</div>
+</body>
+</html>

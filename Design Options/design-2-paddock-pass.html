@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paddock Pass — Seamless FM RSVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------------
+     SEAMLESS FM — RSVP DESIGN 2 · "PADDOCK PASS"
+     A VIP race-weekend credential on a black background.
+     No JavaScript. CSS-only interactivity.
+  ------------------------------------------------------------------ */
+  :root{
+    --black:#000000;
+    --navy:#0A1628;
+    --navy-mid:#0D2137;
+    --blue:#35B8F3;
+    --blue-dark:#1A9FD4;
+    --blue-deep:#0E7CA8;   /* AA-safe blue for small text / rings on white */
+    --blue-light:#7FD5F8;
+    --white:#FFFFFF;
+    --ink:#0A1628;
+    --ink-soft:#43515E;
+    --ink-faint:#5B6874;
+    --line:#DDE3E9;
+    --fill:#F3F5F7;
+    --stub-bg:#EFF3F6;
+    --radius:18px;
+    --font-body:'Barlow',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    --font-display:'Barlow Condensed','Arial Narrow','Barlow',Helvetica,Arial,sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{-webkit-text-size-adjust:100%;}
+
+  body{
+    font-family:var(--font-body);
+    font-weight:400;
+    color:var(--white);
+    background:
+      radial-gradient(1100px 560px at 50% -8%, rgba(53,184,243,.10), transparent 62%),
+      repeating-linear-gradient(112deg, rgba(255,255,255,.026) 0 1px, transparent 1px 110px),
+      var(--black);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:56px 20px 40px;
+  }
+
+  .wrap{width:100%;max-width:640px;display:flex;flex-direction:column;align-items:stretch;}
+
+  /* ================= TICKET SHELL ================= */
+  .ticket{
+    position:relative;
+    background:var(--white);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:
+      0 40px 90px rgba(53,184,243,.09),
+      0 18px 44px rgba(0,0,0,.65),
+      0 2px 0 rgba(255,255,255,.06);
+  }
+
+  /* Checkered-flag strip across the very top */
+  .checkers{
+    height:16px;
+    background:repeating-conic-gradient(#0B1119 0% 25%, #F2F4F6 0% 50%);
+    background-size:16px 16px;
+  }
+
+  /* ================= DARK STUB HEADER ================= */
+  .stub{
+    background:linear-gradient(180deg, var(--navy) 0%, #0B1B31 100%);
+    padding:0 36px 34px;
+  }
+
+  /* Lanyard slot cutout */
+  .slot{
+    width:76px;height:12px;
+    margin:20px auto 0;
+    background:var(--black);
+    border-radius:999px;
+    box-shadow:inset 0 2px 5px rgba(0,0,0,.95), 0 1px 0 rgba(255,255,255,.07);
+  }
+
+  .stub-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-top:26px;
+  }
+
+  /* --- Logo lockup --- */
+  .logo{display:flex;align-items:center;gap:11px;text-decoration:none;}
+  .logo svg{display:block;flex:none;}
+  .logo-words{display:flex;flex-direction:column;gap:3px;}
+  .logo-name{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:23px;
+    line-height:1;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--white);
+  }
+  .logo-sub{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:8.5px;
+    line-height:1;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+    color:var(--blue);
+  }
+
+  .admit{
+    flex:none;
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:10.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--blue-light);
+    border:1px solid rgba(53,184,243,.45);
+    border-radius:999px;
+    padding:9px 14px 8px;
+    white-space:nowrap;
+  }
+
+  .headline{
+    margin-top:26px;
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(48px, 12.5vw, 82px);
+    line-height:.92;
+    letter-spacing:.005em;
+    text-transform:uppercase;
+    color:var(--white);
+  }
+  .headline .slashes{
+    color:var(--blue);
+    font-weight:800;
+    margin-left:.06em;
+  }
+
+  .kicker{
+    margin-top:12px;
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--blue-light);
+  }
+
+  .intro{
+    margin-top:16px;
+    font-size:15.5px;
+    font-weight:400;
+    line-height:1.6;
+    color:#BAC5CF;
+    max-width:48ch;
+  }
+
+  /* --- Credential meta grid --- */
+  .meta{
+    margin-top:28px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.16);
+  }
+  .meta > div{
+    background:var(--navy-mid);
+    padding:14px 16px 15px;
+    min-width:0;
+  }
+  .meta dt{
+    font-weight:600;
+    font-size:9.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--blue-light);
+  }
+  .meta dd{
+    margin-top:7px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    line-height:1.1;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    color:var(--white);
+    overflow-wrap:break-word;
+  }
+  .meta dd.big{
+    font-weight:800;
+    font-size:26px;
+    color:var(--blue);
+  }
+  .meta dd small{
+    display:block;
+    margin-top:3px;
+    font-family:var(--font-body);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.14em;
+    color:#A7B4BF;
+  }
+
+  /* ================= PERFORATED TEAR LINE ================= */
+  .tear{
+    position:relative;
+    height:0;
+    border-top:2px dashed #B7C2CC;
+  }
+  .tear::before,
+  .tear::after{
+    content:"";
+    position:absolute;
+    top:-14px;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--black);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.9);
+  }
+  .tear::before{left:-13px;}
+  .tear::after{right:-13px;}
+
+  /* ================= WHITE TICKET BODY (FORM) ================= */
+  .body{
+    background:var(--white);
+    color:var(--ink);
+    padding:32px 36px 36px;
+  }
+
+  fieldset{border:0;min-width:0;}
+
+  .sec{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .sec .n{color:var(--blue-deep);font-weight:800;}
+  .sec .sl{color:var(--blue);font-weight:800;letter-spacing:0;}
+  .sec::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .section + .section{margin-top:36px;}
+
+  /* --- RSVP radio cards --- */
+  .rsvp{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .rsvp-option{position:relative;}
+  .rsvp-option input{
+    position:absolute;
+    opacity:0;
+    width:1px;height:1px;
+    pointer-events:none;
+  }
+  .rsvp-card{
+    display:flex;
+    align-items:flex-start;
+    gap:13px;
+    padding:18px 18px 17px;
+    min-height:84px;
+    background:#F8FAFB;
+    border:2px solid var(--line);
+    border-radius:12px;
+    cursor:pointer;
+    transition:border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+  }
+  .rsvp-card:hover{border-color:var(--blue-dark);}
+  .dot{
+    flex:none;
+    width:22px;height:22px;
+    margin-top:1px;
+    border-radius:50%;
+    border:2px solid #7E8C99;
+    background:var(--white);
+    display:grid;
+    place-items:center;
+    transition:border-color .15s ease;
+  }
+  .dot::after{
+    content:"";
+    width:10px;height:10px;
+    border-radius:50%;
+    background:var(--blue-deep);
+    transform:scale(0);
+    transition:transform .15s ease;
+  }
+  .rsvp-copy{min-width:0;}
+  .rsvp-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    line-height:1;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .rsvp-sub{
+    margin-top:6px;
+    font-size:13px;
+    font-weight:400;
+    line-height:1.4;
+    color:var(--ink-faint);
+  }
+  .rsvp-option input:checked + .rsvp-card{
+    border-color:var(--blue-deep);
+    background:#EFF9FE;
+    box-shadow:inset 0 0 0 1px var(--blue-deep);
+  }
+  .rsvp-option input:checked + .rsvp-card .dot{border-color:var(--blue-deep);}
+  .rsvp-option input:checked + .rsvp-card .dot::after{transform:scale(1);}
+  .rsvp-option input:focus-visible + .rsvp-card{
+    border-color:var(--blue-deep);
+    box-shadow:0 0 0 4px rgba(53,184,243,.35);
+  }
+
+  /* --- Fields --- */
+  .grid2{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px 16px;
+  }
+  .fgroup{min-width:0;}
+  .fgroup.full{grid-column:1 / -1;}
+
+  .lbl{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    margin-bottom:8px;
+    font-weight:600;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .lbl .opt{
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.1em;
+    color:var(--ink-faint);
+  }
+
+  .field{
+    width:100%;
+    font-family:var(--font-body);
+    font-weight:500;
+    font-size:16px;
+    color:var(--ink);
+    background:var(--fill);
+    border:1px solid #D6DDE3;
+    border-radius:8px;
+    padding:14px 15px;
+    min-height:50px;
+    transition:border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+  }
+  .field::placeholder{color:var(--ink-faint);font-weight:400;}
+  .field:hover{border-color:#9FB0BE;}
+  .field:focus{
+    outline:none;
+    background:var(--white);
+    border-color:var(--blue-deep);
+    box-shadow:0 0 0 3px rgba(53,184,243,.32);
+  }
+
+  textarea.field{
+    min-height:104px;
+    resize:vertical;
+    line-height:1.55;
+  }
+
+  select.field{
+    appearance:none;
+    -webkit-appearance:none;
+    padding-right:46px;
+    cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%230E7CA8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 16px center;
+  }
+
+  /* --- Submit --- */
+  .submit-block{margin-top:36px;}
+  .submit{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:21px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#06121C;
+    background:var(--blue);
+    border:0;
+    border-radius:10px;
+    padding:19px 24px;
+    min-height:62px;
+    cursor:pointer;
+    transition:background-color .15s ease, transform .1s ease;
+  }
+  .submit svg{display:block;flex:none;}
+  .submit:hover{background:var(--blue-dark);}
+  .submit:active{transform:translateY(1px);}
+  .submit:focus-visible{outline:3px solid var(--blue-deep);outline-offset:3px;}
+
+  .privacy{
+    margin-top:16px;
+    text-align:center;
+    font-size:13px;
+    font-weight:400;
+    line-height:1.5;
+    color:var(--ink-faint);
+  }
+
+  /* ================= BARCODE STUB FOOTER ================= */
+  .stubfoot{
+    background:var(--stub-bg);
+    padding:22px 36px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .barcode{min-width:0;}
+  .barcode svg{display:block;max-width:100%;height:auto;}
+  .serial{
+    margin-top:8px;
+    font-weight:600;
+    font-size:10px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    white-space:nowrap;
+  }
+  .gridpos{flex:none;text-align:right;}
+  .gridpos-main{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:30px;
+    line-height:1;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .gridpos-main span{color:var(--blue-deep);}
+  .gridpos-sub{
+    margin-top:7px;
+    font-weight:600;
+    font-size:9.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+
+  /* ================= BELOW THE TICKET ================= */
+  .eventline{
+    margin-top:30px;
+    text-align:center;
+    font-size:12.5px;
+    font-weight:400;
+    line-height:1.7;
+    color:#8FA0AC;
+  }
+  .eventline strong{font-weight:600;color:#B9C4CE;}
+
+  .site-foot{
+    margin-top:18px;
+    border-top:1px solid rgba(255,255,255,.14);
+    padding-top:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .site-foot .sf-name{
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:#8FA0AC;
+  }
+  .site-foot a{
+    font-weight:500;
+    font-size:13px;
+    color:var(--blue-light);
+    text-decoration:none;
+    padding:6px 0;
+  }
+  .site-foot a:hover{color:var(--white);text-decoration:underline;}
+  .site-foot a:focus-visible{outline:2px solid var(--blue-light);outline-offset:3px;border-radius:2px;}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:640px){
+    body{padding:36px 14px 32px;}
+    .stub{padding-left:22px;padding-right:22px;padding-bottom:28px;}
+    .body{padding:26px 22px 30px;}
+    .stubfoot{padding:20px 22px 22px;}
+  }
+  @media (max-width:560px){
+    .rsvp{grid-template-columns:1fr;}
+    .grid2{grid-template-columns:1fr;gap:18px;}
+    .stub-top{margin-top:22px;}
+    .headline{margin-top:22px;}
+    .stubfoot{flex-direction:column;align-items:flex-start;gap:18px;}
+    .gridpos{text-align:left;}
+    .site-foot{flex-direction:column;justify-content:center;text-align:center;}
+  }
+  @media (max-width:430px){
+    .meta{grid-template-columns:1fr;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+
+  <section class="ticket" aria-label="Paddock Pass RSVP credential">
+
+    <div class="checkers" aria-hidden="true"></div>
+
+    <!-- ============ DARK STUB HEADER ============ -->
+    <header class="stub">
+      <div class="slot" aria-hidden="true"></div>
+
+      <div class="stub-top">
+        <!-- Seamless FM logo lockup -->
+        <div class="logo" aria-label="Seamless FM — Facility Management">
+          <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path d="M38 9 H17 a8.5 8.5 0 0 0 0 17 h14 a8.5 8.5 0 0 1 0 17 H10"
+                  fill="none" stroke="#35B8F3" stroke-width="8.5" stroke-linecap="square"/>
+          </svg>
+          <span class="logo-words">
+            <span class="logo-name">Seamless</span>
+            <span class="logo-sub">Facility&nbsp;Management</span>
+          </span>
+        </div>
+
+        <span class="admit">Admit One — Client Guest</span>
+      </div>
+
+      <h1 class="headline">Paddock Pass<span class="slashes" aria-hidden="true">///</span></h1>
+      <p class="kicker">Official Client Credential · Race Weekend 2026</p>
+
+      <p class="intro">You're on our list. Three days of NASCAR at Homestead-Miami — good seats, great food, zero hassle. Hosted by Seamless FM. All we need is your yes.</p>
+
+      <dl class="meta">
+        <div>
+          <dt>Event</dt>
+          <dd>NASCAR Race Weekend</dd>
+        </div>
+        <div>
+          <dt>Date</dt>
+          <dd class="big">Nov 06–08 · 2026</dd>
+        </div>
+        <div>
+          <dt>Venue</dt>
+          <dd>Homestead-Miami Speedway <small>Homestead, Florida</small></dd>
+        </div>
+        <div>
+          <dt>Hosted by</dt>
+          <dd>Seamless FM <small>Your race-weekend crew</small></dd>
+        </div>
+      </dl>
+    </header>
+
+    <div class="tear" aria-hidden="true"></div>
+
+    <!-- ============ WHITE TICKET BODY / FORM ============ -->
+    <form class="body" action="#" method="post">
+
+      <!-- 01 · RSVP -->
+      <fieldset class="section">
+        <legend class="sec"><span class="n">01</span><span class="sl" aria-hidden="true">///</span>The Call</legend>
+        <div class="rsvp">
+          <div class="rsvp-option">
+            <input type="radio" id="rsvp-yes" name="attending" value="yes" required>
+            <label class="rsvp-card" for="rsvp-yes">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="rsvp-copy">
+                <span class="rsvp-title">Yes, I'll be there</span>
+                <span class="rsvp-sub">Count me in for Homestead.</span>
+              </span>
+            </label>
+          </div>
+          <div class="rsvp-option">
+            <input type="radio" id="rsvp-no" name="attending" value="no">
+            <label class="rsvp-card" for="rsvp-no">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="rsvp-copy">
+                <span class="rsvp-title">Sorry, can't make it</span>
+                <span class="rsvp-sub">Next time. Keep me on the list.</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 02 · CONTACT DETAILS -->
+      <div class="section">
+        <h2 class="sec"><span class="n">02</span><span class="sl" aria-hidden="true">///</span>Your Details</h2>
+        <div class="grid2">
+          <div class="fgroup">
+            <label class="lbl" for="first-name">First Name</label>
+            <input class="field" type="text" id="first-name" name="first_name" placeholder="Alex" autocomplete="given-name" required>
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="last-name">Last Name</label>
+            <input class="field" type="text" id="last-name" name="last_name" placeholder="Rivera" autocomplete="family-name" required>
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="company">Company Name</label>
+            <input class="field" type="text" id="company" name="company" placeholder="Your company" autocomplete="organization">
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="role">Position / Role</label>
+            <input class="field" type="text" id="role" name="role" placeholder="Facilities Director" autocomplete="organization-title">
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="phone">Phone Number</label>
+            <input class="field" type="tel" id="phone" name="phone" placeholder="(305) 555-0134" autocomplete="tel">
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="email">Email Address</label>
+            <input class="field" type="email" id="email" name="email" placeholder="alex@company.com" autocomplete="email" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 · FOOD & ACCESS -->
+      <div class="section">
+        <h2 class="sec"><span class="n">03</span><span class="sl" aria-hidden="true">///</span>Food &amp; Access</h2>
+        <div class="grid2">
+          <div class="fgroup">
+            <label class="lbl" for="dietary">Dietary Requirements</label>
+            <select class="field" id="dietary" name="dietary">
+              <option value="none" selected>No restrictions</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="gluten-free">Gluten-free</option>
+              <option value="halal">Halal</option>
+              <option value="kosher">Kosher</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label class="lbl" for="dietary-notes">Anything else we should know? <span class="opt">(Optional)</span></label>
+            <input class="field" type="text" id="dietary-notes" name="dietary_notes" placeholder="Allergies, strong preferences — tell us.">
+          </div>
+          <div class="fgroup full">
+            <label class="lbl" for="assistance">Assistance Needed <span class="opt">(Optional)</span></label>
+            <textarea class="field" id="assistance" name="assistance" placeholder="Mobility access, hearing assistance, or any other accommodation — flag it here and we'll have it ready."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-block">
+        <button class="submit" type="submit">
+          <svg width="17" height="17" viewBox="0 0 15 15" fill="currentColor" aria-hidden="true" focusable="false">
+            <rect x="0" y="0" width="5" height="5"/>
+            <rect x="10" y="0" width="5" height="5"/>
+            <rect x="5" y="5" width="5" height="5"/>
+            <rect x="0" y="10" width="5" height="5"/>
+            <rect x="10" y="10" width="5" height="5"/>
+          </svg>
+          Lock In My Pass
+        </button>
+        <p class="privacy">Your details stay private. We only use them to coordinate your race weekend.</p>
+      </div>
+
+    </form>
+
+    <div class="tear" aria-hidden="true"></div>
+
+    <!-- ============ BARCODE STUB FOOTER ============ -->
+    <div class="stubfoot">
+      <div class="barcode">
+        <svg width="220" height="44" viewBox="0 0 240 44" fill="#16222E" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+          <rect x="0" width="4" height="44"/><rect x="6" width="2" height="44"/><rect x="10" width="2" height="44"/><rect x="14" width="6" height="44"/><rect x="22" width="2" height="44"/><rect x="26" width="4" height="44"/><rect x="32" width="2" height="44"/><rect x="36" width="2" height="44"/><rect x="40" width="8" height="44"/><rect x="50" width="2" height="44"/><rect x="54" width="4" height="44"/><rect x="60" width="2" height="44"/><rect x="64" width="2" height="44"/><rect x="68" width="6" height="44"/><rect x="76" width="2" height="44"/><rect x="80" width="2" height="44"/><rect x="84" width="4" height="44"/><rect x="90" width="2" height="44"/><rect x="94" width="8" height="44"/><rect x="104" width="2" height="44"/><rect x="108" width="2" height="44"/><rect x="112" width="4" height="44"/><rect x="118" width="2" height="44"/><rect x="122" width="6" height="44"/><rect x="130" width="2" height="44"/><rect x="134" width="2" height="44"/><rect x="138" width="4" height="44"/><rect x="144" width="2" height="44"/><rect x="148" width="2" height="44"/><rect x="152" width="8" height="44"/><rect x="162" width="2" height="44"/><rect x="166" width="4" height="44"/><rect x="172" width="2" height="44"/><rect x="176" width="2" height="44"/><rect x="180" width="6" height="44"/><rect x="188" width="2" height="44"/><rect x="192" width="2" height="44"/><rect x="196" width="4" height="44"/><rect x="202" width="2" height="44"/><rect x="206" width="8" height="44"/><rect x="216" width="2" height="44"/><rect x="220" width="4" height="44"/><rect x="226" width="2" height="44"/><rect x="230" width="2" height="44"/><rect x="234" width="6" height="44"/>
+        </svg>
+        <p class="serial">SFM · 2026 · HMS · Client</p>
+      </div>
+      <div class="gridpos">
+        <p class="gridpos-main">Grid <span>P-06</span></p>
+        <p class="gridpos-sub">Pit Lane Access · No. SFM-1106-026</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ BELOW THE TICKET ============ -->
+  <p class="eventline"><strong>NASCAR Race Weekend</strong> · Homestead-Miami Speedway, Homestead, FL · November 6–8, 2026 · Hosted by Seamless FM</p>
+
+  <footer class="site-foot">
+    <span class="sf-name">Seamless FM — Facility Management</span>
+    <a href="https://www.seamlessfm.com">www.seamlessfm.com</a>
+  </footer>
+
+</main>
+
+</body>
+</html>

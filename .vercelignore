@@ -1,0 +1,6 @@
+# design sources & raw media stay out of the deployment (they remain in the repo)
+Design Options
+UI Essentials
+Site
+*.mp4
+Car reference.png

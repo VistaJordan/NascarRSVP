@@ -15,6 +15,16 @@ function authorized(req) {
 }
 
 async function ensureTable(sql) {
+  try {
+    await createTable(sql);
+  } catch (err) {
+    // two cold starts can race CREATE TABLE IF NOT EXISTS; the loser's
+    // duplicate-key error is harmless once the winner has created the table
+    if (!/already exists|duplicate key/i.test(String(err))) throw err;
+  }
+}
+
+async function createTable(sql) {
   await sql`
     CREATE TABLE IF NOT EXISTS rsvps (
       id SERIAL PRIMARY KEY,
@@ -43,9 +53,9 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Database not configured — connect Postgres in Vercel and redeploy' });
   }
 
-  const sql = neon(DB_URL);
-
   try {
+    const sql = neon(DB_URL);
+
     if (req.method === 'GET') {
       await ensureTable(sql);
       const rows = await sql`SELECT * FROM rsvps ORDER BY created_at DESC`;

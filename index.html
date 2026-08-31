@@ -817,27 +817,27 @@
         <div class="f-grid">
           <div class="field">
             <label class="f-label" for="first-name">First name</label>
-            <input class="input" type="text" id="first-name" name="first-name" autocomplete="given-name" required>
+            <input class="input" type="text" id="first-name" name="first-name" autocomplete="given-name" maxlength="200" required>
           </div>
           <div class="field">
             <label class="f-label" for="last-name">Last name</label>
-            <input class="input" type="text" id="last-name" name="last-name" autocomplete="family-name" required>
+            <input class="input" type="text" id="last-name" name="last-name" autocomplete="family-name" maxlength="200" required>
           </div>
           <div class="field">
             <label class="f-label" for="company">Company name</label>
-            <input class="input" type="text" id="company" name="company" autocomplete="organization" required>
+            <input class="input" type="text" id="company" name="company" autocomplete="organization" maxlength="200" required>
           </div>
           <div class="field">
             <label class="f-label" for="role">Position / Role</label>
-            <input class="input" type="text" id="role" name="role" autocomplete="organization-title" required>
+            <input class="input" type="text" id="role" name="role" autocomplete="organization-title" maxlength="200" required>
           </div>
           <div class="field">
             <label class="f-label" for="phone">Phone number</label>
-            <input class="input" type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="(305) 555-0100" required>
+            <input class="input" type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="(305) 555-0100" maxlength="50" required>
           </div>
           <div class="field">
             <label class="f-label" for="email">Email address</label>
-            <input class="input" type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="you@company.com" required>
+            <input class="input" type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="you@company.com" maxlength="320" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="An email address like you@company.com" required>
           </div>
         </div>
       </section>
@@ -862,7 +862,7 @@
           </div>
           <div class="field">
             <label class="f-label" for="dietary-notes">Anything else we should know? <span class="opt">(Optional)</span></label>
-            <input class="input" type="text" id="dietary-notes" name="dietary-notes" placeholder="Allergies, preferences — tell us here">
+            <input class="input" type="text" id="dietary-notes" name="dietary-notes" maxlength="500" placeholder="Allergies, preferences — tell us here">
           </div>
         </div>
       </section>
@@ -874,7 +874,7 @@
         </div>
         <div class="field">
           <label class="f-label" for="assistance">Assistance needed <span class="opt">(Optional)</span></label>
-          <textarea class="textarea" id="assistance" name="assistance" placeholder="Mobility access, hearing assistance, or any other accommodation — tell us here and consider it handled."></textarea>
+          <textarea class="textarea" id="assistance" name="assistance" maxlength="2000" placeholder="Mobility access, hearing assistance, or any other accommodation — tell us here and consider it handled."></textarea>
         </div>
       </section>
 
@@ -902,7 +902,7 @@
   <video class="confirm-video" id="confirmVideo" muted playsinline loop preload="none" aria-hidden="true" hidden></video>
   <div class="confirm-scrim" aria-hidden="true"></div>
   <div class="confirm-content" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmSub">
-    <p class="confirm-eyebrow">RSVP received</p>
+    <p class="confirm-eyebrow" id="confirmEyebrow">RSVP received</p>
     <p class="confirm-title" id="confirmTitle"></p>
     <p class="confirm-sub" id="confirmSub"></p>
     <p class="confirm-note" id="confirmNote"></p>
@@ -1337,22 +1337,42 @@
   var confirmSub = document.getElementById('confirmSub');
   var confirmClose = document.getElementById('confirmClose');
   var confirmNote = document.getElementById('confirmNote');
+  var confirmEyebrow = document.getElementById('confirmEyebrow');
   var confirmPrevFocus = null;
   var confirmInert = [];
 
-  function openConfirm(yes, saved){
+  // outcome: 'ok' | 'invalid' | 'network' | 'slow' — anything but 'ok' must
+  // read unmistakably as NOT saved (no celebration, no video)
+  function openConfirm(yes, outcome){
     confirmPrevFocus = document.activeElement;
-    if (yes) {
+    var saved = outcome === 'ok';
+    if (saved && yes) {
+      confirmEyebrow.textContent = 'RSVP received';
       confirmTitle.innerHTML = 'You’re locked <em>in.</em>';
       confirmSub.textContent = 'See you trackside — we’ll be in touch with every detail before race weekend.';
-    } else {
+      confirmNote.textContent = 'Response recorded — you can close this page, we’ve got it from here.';
+    } else if (saved) {
+      confirmEyebrow.textContent = 'RSVP received';
       confirmTitle.innerHTML = 'We’ll miss <em>you.</em>';
       confirmSub.textContent = 'Noted — and your seat’s saved for next season.';
+      confirmNote.textContent = 'Response recorded — you can close this page, we’ve got it from here.';
+    } else if (outcome === 'invalid') {
+      confirmEyebrow.textContent = 'One more look';
+      confirmTitle.innerHTML = 'Check your <em>details.</em>';
+      confirmSub.textContent = 'Something in the form didn’t look right to us. Double-check your email and phone, then try again — everything you typed is still there.';
+      confirmNote.textContent = 'Nothing has been saved yet.';
+    } else if (outcome === 'slow') {
+      confirmEyebrow.textContent = 'Hang tight';
+      confirmTitle.innerHTML = 'Still <em>working.</em>';
+      confirmSub.textContent = 'That took longer than expected, and we can’t confirm it went through. Wait a moment and submit again — a double entry is fine, we’ll sort it out.';
+      confirmNote.textContent = 'If it keeps happening, just reply to the invite email with your answer.';
+    } else {
+      confirmEyebrow.textContent = 'Pit stop';
+      confirmTitle.innerHTML = 'Not saved <em>yet.</em>';
+      confirmSub.textContent = 'We couldn’t record your RSVP. Check your connection and try again — everything you typed is still there.';
+      confirmNote.textContent = 'If it keeps happening, just reply to the invite email with your answer.';
     }
-    confirmNote.textContent = saved
-      ? 'Response recorded — you can close this page, we’ve got it from here.'
-      : 'Heads-up: the server couldn’t be reached, so this response wasn’t saved.';
-    var playVideo = yes && DRIFT && !reduceMotion;
+    var playVideo = saved && yes && DRIFT && !reduceMotion;
     confirmVideo.hidden = !playVideo;
     confirmEl.hidden = false;
     if (playVideo) {
@@ -1396,19 +1416,31 @@
       dietaryNotes: form['dietary-notes'].value.trim(),
       assistance: form['assistance'].value.trim()
     };
+    // native `required` accepts whitespace-only input; the server won't
+    var requiredIds = ['first-name', 'last-name', 'company', 'role', 'phone', 'email'];
+    for (var ri = 0; ri < requiredIds.length; ri++) {
+      var reqEl = document.getElementById(requiredIds[ri]);
+      if (!reqEl.value.trim()) {
+        reqEl.setCustomValidity('Please fill this in.');
+        reqEl.reportValidity();
+        reqEl.addEventListener('input', function(ev){ ev.target.setCustomValidity(''); }, { once: true });
+        return;
+      }
+    }
     submitBtn.disabled = true;
     var controller = ('AbortController' in window) ? new AbortController() : null;
-    var timer = controller ? setTimeout(function(){ controller.abort(); }, 10000) : null;
+    // generous timeout: a cold serverless function + waking database can take a while
+    var timer = controller ? setTimeout(function(){ controller.abort(); }, 20000) : null;
     fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
       signal: controller ? controller.signal : undefined
     }).then(function(r){
-      if (!r.ok) throw new Error('save failed');
-      openConfirm(isYes, true);
-    }).catch(function(){
-      openConfirm(isYes, false);
+      if (r.ok) { openConfirm(isYes, 'ok'); return; }
+      openConfirm(isYes, r.status === 400 ? 'invalid' : 'network');
+    }).catch(function(err){
+      openConfirm(isYes, (err && err.name === 'AbortError') ? 'slow' : 'network');
     }).then(function(){
       if (timer) clearTimeout(timer);
       submitBtn.disabled = false;

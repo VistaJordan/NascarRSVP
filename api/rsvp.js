@@ -5,6 +5,16 @@ const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 const DIETARY = ['none', 'vegetarian', 'vegan', 'gluten-free', 'halal', 'kosher', 'other'];
 
 async function ensureTable(sql) {
+  try {
+    await createTable(sql);
+  } catch (err) {
+    // two cold starts can race CREATE TABLE IF NOT EXISTS; the loser's
+    // duplicate-key error is harmless once the winner has created the table
+    if (!/already exists|duplicate key/i.test(String(err))) throw err;
+  }
+}
+
+async function createTable(sql) {
   await sql`
     CREATE TABLE IF NOT EXISTS rsvps (
       id SERIAL PRIMARY KEY,

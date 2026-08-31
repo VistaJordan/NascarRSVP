@@ -238,15 +238,27 @@
   var tblState = document.getElementById('tblState');
   var rowsCache = [];
 
+  // in-memory key is the source of truth; sessionStorage is a best-effort
+  // mirror so login still works when storage access throws (blocked cookies)
+  var memKey = '';
   function getKey(){
-    try { return sessionStorage.getItem(KEY_STORE) || ''; } catch(e){ return ''; }
+    if (memKey) return memKey;
+    try { memKey = sessionStorage.getItem(KEY_STORE) || ''; } catch(e){}
+    return memKey;
   }
   function setKey(k){
+    memKey = k || '';
     try { if (k) sessionStorage.setItem(KEY_STORE, k); else sessionStorage.removeItem(KEY_STORE); } catch(e){}
   }
 
   function showGate(msg){
     setKey('');
+    // purge guest PII from the page, not just the key from storage
+    rowsCache = [];
+    tblBody.innerHTML = '';
+    ['statYes','statNo','statDiet','statAssist'].forEach(function(id){
+      document.getElementById(id).textContent = '–';
+    });
     dash.hidden = true;
     topActions.hidden = true;
     gate.hidden = false;
@@ -322,10 +334,12 @@
       .then(function(j){ showDash(); render(j.rows || []); })
       .catch(function(err){
         if (err.message === 'unauthorized') return;
+        // keep the previously rendered rows so the table, tiles, and CSV
+        // export stay consistent — just surface the refresh failure
         showDash();
-        tblBody.innerHTML = '';
         tblState.hidden = false;
-        tblState.textContent = 'Could not load responses: ' + err.message;
+        tblState.textContent = 'Could not refresh: ' + err.message +
+          (rowsCache.length ? ' — showing the last loaded data.' : '');
       });
   }
 
@@ -348,8 +362,13 @@
       headers: { 'Authorization': 'Bearer ' + getKey() }
     }).then(function(r){
       if (r.status === 401) { showGate('That key was rejected — try again.'); return; }
+      if (!r.ok) {
+        return r.json().catch(function(){ return {}; }).then(function(j){
+          window.alert('Delete failed: ' + (j.error || ('HTTP ' + r.status)));
+        });
+      }
       load();
-    }).catch(function(){ load(); });
+    }).catch(function(){ window.alert('Delete failed: could not reach the server.'); });
   });
 
   // CSV export — quotes every field, doubles inner quotes, and neutralizes

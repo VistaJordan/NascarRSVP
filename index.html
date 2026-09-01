@@ -1422,11 +1422,20 @@
     poFields.hidden = !bringing;
     poFirst.required = bringing;
     poLast.required = bringing;
+    // a pending "Please fill this in" on a now-hidden field would block
+    // submit invisibly — native validation can't focus a hidden control
+    if (!bringing) {
+      poFirst.setCustomValidity('');
+      poLast.setCustomValidity('');
+    }
   }
   document.querySelectorAll('input[name="plusone"]').forEach(function(r){
     r.addEventListener('change', syncPlusOne);
   });
   syncPlusOne();
+  // browsers (notably Firefox) restore form state after load without firing
+  // change events — re-sync the reveal to whatever radio came back checked
+  window.addEventListener('pageshow', syncPlusOne);
 
   /* ==================================================================
      5. SUBMIT — posts the response to /api/rsvp (Vercel serverless +

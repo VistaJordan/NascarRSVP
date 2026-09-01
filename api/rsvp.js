@@ -44,16 +44,23 @@ export default async function handler(req, res) {
   const plusOneLastName = plusOne ? str(b.plusOneLastName, 200) : '';
   const plusOneDietary = plusOne ? (DIETARY.includes(b.plusOneDietary) ? b.plusOneDietary : 'other') : '';
 
-  const address1 = str(b.address1, 200);
-  const address2 = optStr(b.address2, 200);
-  const city = str(b.city, 100);
-  const state = STATES.includes(b.state) ? b.state : null;
-  const zip = typeof b.zip === 'string' && /^\d{5}(-\d{4})?$/.test(b.zip.trim()) ? b.zip.trim() : null;
+  // transition fallback: pages cached from before the address rollout send no
+  // address fields at all — store those rows with a null address (the columns
+  // are nullable) instead of dead-ending the guest with a permanent 400.
+  // Remove once the invite cache window has passed.
+  const legacyNoAddress = b.address1 === undefined && b.city === undefined &&
+                          b.state === undefined && b.zip === undefined;
+  const address1 = legacyNoAddress ? null : str(b.address1, 200);
+  const address2 = legacyNoAddress ? null : optStr(b.address2, 200);
+  const city = legacyNoAddress ? null : str(b.city, 100);
+  const state = legacyNoAddress ? null : (STATES.includes(b.state) ? b.state : null);
+  const zip = legacyNoAddress ? null : (typeof b.zip === 'string' && /^\d{5}(-\d{4})?$/.test(b.zip.trim()) ? b.zip.trim() : null);
+  const addressOk = legacyNoAddress || (address1 && address2 !== null && city && state && zip);
 
   if (!rsvp || !firstName || !lastName || !company || !role || !phone || !email ||
       dietaryNotes === null || assistance === null ||
       plusOneFirstName === null || plusOneLastName === null ||
-      !address1 || address2 === null || !city || !state || !zip ||
+      !addressOk ||
       !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid submission' });
   }

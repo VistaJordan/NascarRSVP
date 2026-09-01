@@ -1467,6 +1467,9 @@
   // if a client-specific clip is missing, fall back to the default clip;
   // if that fails too, drop to the static gradient
   confirmVideo.addEventListener('error', function(){
+    // a late 404 can land after the overlay closed — never start playback
+    // of a video nobody can see
+    if (confirmEl.hidden || confirmVideo.hidden) return;
     if (confirmVideo.getAttribute('src') !== '/drift/default.mp4') {
       confirmVideo.src = '/drift/default.mp4';
       var pr = confirmVideo.play();

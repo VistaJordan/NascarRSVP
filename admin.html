@@ -111,6 +111,7 @@
     font-variant-numeric:tabular-nums;margin-top:4px;
   }
   .tile .t-sub{font-size:12px;color:var(--faint);margin-top:2px;min-height:16px;}
+  .tile.head{border-top:3px solid var(--blue-light);}
   .tile.yes{border-top:3px solid var(--teal);}
   .tile.no{border-top:3px solid rgba(255,255,255,.28);}
   .tile.diet{border-top:3px solid var(--blue);}
@@ -118,7 +119,7 @@
 
   /* table */
   .tbl-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--card);}
-  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1080px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1320px;}
   th{
     position:sticky;top:0;background:var(--navy);
     text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
@@ -185,6 +186,11 @@
   <!-- DASHBOARD -->
   <main id="dash" hidden>
     <div class="stats">
+      <div class="tile head">
+        <div class="t-label">Headcount</div>
+        <div class="t-num" id="statHead">–</div>
+        <div class="t-sub">attending incl. plus-ones</div>
+      </div>
       <div class="tile yes">
         <div class="t-label">Locked in</div>
         <div class="t-num" id="statYes">–</div>
@@ -212,7 +218,7 @@
         <thead>
           <tr>
             <th>Received</th><th>Name</th><th>Company</th><th>Role</th><th>Phone</th>
-            <th>Email</th><th>RSVP</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
+            <th>Email</th><th>RSVP</th><th>Plus-one</th><th>Address</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
           </tr>
         </thead>
         <tbody id="tblBody"></tbody>
@@ -256,7 +262,7 @@
     // purge guest PII from the page, not just the key from storage
     rowsCache = [];
     tblBody.innerHTML = '';
-    ['statYes','statNo','statDiet','statAssist'].forEach(function(id){
+    ['statHead','statYes','statNo','statDiet','statAssist'].forEach(function(id){
       document.getElementById(id).textContent = '–';
     });
     dash.hidden = true;
@@ -285,12 +291,14 @@
 
   function render(rows){
     rowsCache = rows;
-    var yes = 0, no = 0, diet = 0, assist = 0;
+    var yes = 0, no = 0, diet = 0, assist = 0, head = 0;
     rows.forEach(function(r){
-      if (r.rsvp === 'yes') yes++; else no++;
-      if ((r.dietary && r.dietary !== 'none') || (r.dietary_notes && r.dietary_notes.trim())) diet++;
+      if (r.rsvp === 'yes') { yes++; head += r.plus_one ? 2 : 1; } else no++;
+      if ((r.dietary && r.dietary !== 'none') || (r.dietary_notes && r.dietary_notes.trim()) ||
+          (r.plus_one && r.plus_one_dietary && r.plus_one_dietary !== 'none')) diet++;
       if (r.assistance && r.assistance.trim()) assist++;
     });
+    document.getElementById('statHead').textContent = head;
     document.getElementById('statYes').textContent = yes;
     document.getElementById('statNo').textContent = no;
     document.getElementById('statDiet').textContent = diet;
@@ -312,6 +320,11 @@
         '<td class="num">' + esc(r.phone) + '</td>' +
         '<td>' + esc(r.email) + '</td>' +
         '<td><span class="badge ' + (r.rsvp === 'yes' ? 'yes">Locked in' : 'no">Declined') + '</span></td>' +
+        '<td>' + (r.plus_one
+          ? esc(((r.plus_one_first_name || '') + ' ' + (r.plus_one_last_name || '')).trim() +
+                (r.plus_one_dietary && r.plus_one_dietary !== 'none' ? ' · ' + r.plus_one_dietary : ''))
+          : '—') + '</td>' +
+        '<td>' + esc([r.address1, r.address2, r.city, r.state, r.zip].filter(Boolean).join(', ') || '—') + '</td>' +
         '<td>' + esc(r.dietary || '—') + '</td>' +
         '<td>' + esc(r.dietary_notes || '—') + '</td>' +
         '<td>' + esc(r.assistance || '—') + '</td>' +
@@ -379,10 +392,14 @@
     return '"' + s.replace(/"/g, '""') + '"';
   }
   document.getElementById('csvBtn').addEventListener('click', function(){
-    var head = ['received','first_name','last_name','company','role','phone','email','rsvp','dietary','dietary_notes','assistance'];
+    var head = ['received','first_name','last_name','company','role','phone','email','rsvp',
+                'plus_one','plus_one_first_name','plus_one_last_name','plus_one_dietary',
+                'address1','address2','city','state','zip','dietary','dietary_notes','assistance'];
     var lines = [head.join(',')].concat(rowsCache.map(function(r){
       return [r.created_at, r.first_name, r.last_name, r.company, r.role, r.phone,
-              r.email, r.rsvp, r.dietary, r.dietary_notes, r.assistance].map(csvCell).join(',');
+              r.email, r.rsvp, r.plus_one ? 'yes' : 'no', r.plus_one_first_name, r.plus_one_last_name,
+              r.plus_one_dietary, r.address1, r.address2, r.city, r.state, r.zip,
+              r.dietary, r.dietary_notes, r.assistance].map(csvCell).join(',');
     }));
     var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');

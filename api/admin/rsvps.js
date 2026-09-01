@@ -1,7 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { neon } from '@neondatabase/serverless';
-
-const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+import { DB_URL, getSql, ensureTable } from '../_lib/db.js';
 
 function authorized(req) {
   const key = process.env.ADMIN_KEY;
@@ -12,34 +10,6 @@ function authorized(req) {
   const b = Buffer.from(key);
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
-}
-
-async function ensureTable(sql) {
-  try {
-    await createTable(sql);
-  } catch (err) {
-    // two cold starts can race CREATE TABLE IF NOT EXISTS; the loser's
-    // duplicate-key error is harmless once the winner has created the table
-    if (!/already exists|duplicate key/i.test(String(err))) throw err;
-  }
-}
-
-async function createTable(sql) {
-  await sql`
-    CREATE TABLE IF NOT EXISTS rsvps (
-      id SERIAL PRIMARY KEY,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      rsvp TEXT NOT NULL,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      company TEXT NOT NULL,
-      role TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      email TEXT NOT NULL,
-      dietary TEXT,
-      dietary_notes TEXT,
-      assistance TEXT
-    )`;
 }
 
 export default async function handler(req, res) {
@@ -54,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const sql = neon(DB_URL);
+    const sql = getSql();
 
     if (req.method === 'GET') {
       await ensureTable(sql);

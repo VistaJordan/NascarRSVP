@@ -515,6 +515,10 @@
 
   /* align-items:end keeps paired inputs on one line even when one label wraps to two */
   .f-grid{display:grid;grid-template-columns:1fr;gap:24px 24px;align-items:end;}
+  .span-2{grid-column:1 / -1;}
+  .po-block{margin-top:26px;}
+  .po-fields{margin-top:24px;}
+  .sec-note{font-size:.9rem;line-height:1.55;color:var(--ink-mute);margin:-10px 0 20px;max-width:52ch;}
   .field{display:block;}
   .f-label{
     display:block;
@@ -840,11 +844,92 @@
             <input class="input" type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="you@company.com" maxlength="320" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="An email address like you@company.com" required>
           </div>
         </div>
+
+        <fieldset class="po-block">
+          <legend class="sr-only">Are you bringing a plus-one?</legend>
+          <div class="rsvp-grid">
+            <label class="rsvp-card">
+              <input type="radio" name="plusone" value="solo" checked>
+              <span class="radio-dot" aria-hidden="true"></span>
+              <span class="rsvp-text">
+                <strong>Flying solo</strong>
+                <small>Just you on the guest list.</small>
+              </span>
+              <span class="rsvp-flag flag-no" aria-hidden="true">Party of one</span>
+            </label>
+            <label class="rsvp-card">
+              <input type="radio" name="plusone" value="plus-one">
+              <span class="radio-dot" aria-hidden="true"></span>
+              <span class="rsvp-text">
+                <strong>Bringing a plus-one</strong>
+                <small>There's a seat for them too.</small>
+              </span>
+              <span class="rsvp-flag flag-yes" aria-hidden="true">Party of two</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="f-grid po-fields" id="plusOneFields" hidden>
+          <div class="field">
+            <label class="f-label" for="plus-one-first">Plus-one first name</label>
+            <input class="input" type="text" id="plus-one-first" name="plus-one-first" maxlength="200">
+          </div>
+          <div class="field">
+            <label class="f-label" for="plus-one-last">Plus-one last name</label>
+            <input class="input" type="text" id="plus-one-last" name="plus-one-last" maxlength="200">
+          </div>
+          <div class="field">
+            <label class="f-label" for="plus-one-dietary">Plus-one dietary requirements</label>
+            <select class="select" id="plus-one-dietary" name="plus-one-dietary">
+              <option value="none" selected>No restrictions</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="gluten-free">Gluten-free</option>
+              <option value="halal">Halal</option>
+              <option value="kosher">Kosher</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 · ADDRESS -->
+      <section class="rv" aria-label="Mailing address">
+        <div class="sec-head">
+          <span class="sec-num" aria-hidden="true">03</span>
+          <h3>Package drop</h3>
+        </div>
+        <p class="sec-note">Race-week goodies and credentials ship ahead of the event — tell us where they should land.</p>
+        <div class="f-grid">
+          <div class="field span-2">
+            <label class="f-label" for="address1">Street address</label>
+            <input class="input" type="text" id="address1" name="address1" autocomplete="address-line1" maxlength="200" required>
+          </div>
+          <div class="field">
+            <label class="f-label" for="address2">Apt / Suite <span class="opt">(Optional)</span></label>
+            <input class="input" type="text" id="address2" name="address2" autocomplete="address-line2" maxlength="200">
+          </div>
+          <div class="field">
+            <label class="f-label" for="city">City</label>
+            <input class="input" type="text" id="city" name="city" autocomplete="address-level2" maxlength="100" required>
+          </div>
+          <div class="field">
+            <label class="f-label" for="state">State</label>
+            <select class="select" id="state" name="state" autocomplete="address-level1" required>
+              <option value="" selected disabled>Select state</option>
+              <option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="f-label" for="zip">ZIP code</label>
+            <input class="input" type="text" id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="10" pattern="\d{5}(-\d{4})?" title="A 5-digit ZIP code like 33035" required>
+          </div>
+        </div>
       </section>
 
       <section class="rv" aria-label="Dietary requirements">
         <div class="sec-head">
-          <span class="sec-num" aria-hidden="true">03</span>
+          <span class="sec-num" aria-hidden="true">04</span>
           <h3>Food &amp; drink</h3>
         </div>
         <div class="f-grid">
@@ -869,7 +954,7 @@
 
       <section class="rv" aria-label="Assistance needed">
         <div class="sec-head">
-          <span class="sec-num" aria-hidden="true">04</span>
+          <span class="sec-num" aria-hidden="true">05</span>
           <h3>Anything you need</h3>
         </div>
         <div class="field">
@@ -1321,6 +1406,29 @@
   }
 
   /* ==================================================================
+     4b. PLUS-ONE — reveal the +1 fields (and make their names required)
+     only when "Bringing a plus-one" is selected
+  ================================================================== */
+  var poFields = document.getElementById('plusOneFields');
+  var poFirst = document.getElementById('plus-one-first');
+  var poLast = document.getElementById('plus-one-last');
+
+  function bringingPlusOne(){
+    var c = document.querySelector('input[name="plusone"]:checked');
+    return !!c && c.value === 'plus-one';
+  }
+  function syncPlusOne(){
+    var bringing = bringingPlusOne();
+    poFields.hidden = !bringing;
+    poFirst.required = bringing;
+    poLast.required = bringing;
+  }
+  document.querySelectorAll('input[name="plusone"]').forEach(function(r){
+    r.addEventListener('change', syncPlusOne);
+  });
+  syncPlusOne();
+
+  /* ==================================================================
      5. SUBMIT — posts the response to /api/rsvp (Vercel serverless +
      Postgres), then plays the confirmation: store-drift celebration
      for a "yes", quiet farewell for a "no". If the API is unreachable
@@ -1404,6 +1512,7 @@
     var form = e.target;
     var checked = document.querySelector('input[name="rsvp"]:checked');
     var isYes = !checked || checked.value === 'yes';
+    var bringing = bringingPlusOne();
     var payload = {
       rsvp: isYes ? 'yes' : 'no',
       firstName: form['first-name'].value.trim(),
@@ -1414,10 +1523,20 @@
       email: form['email'].value.trim(),
       dietary: form['dietary'].value,
       dietaryNotes: form['dietary-notes'].value.trim(),
-      assistance: form['assistance'].value.trim()
+      assistance: form['assistance'].value.trim(),
+      plusOne: bringing,
+      plusOneFirstName: bringing ? form['plus-one-first'].value.trim() : '',
+      plusOneLastName: bringing ? form['plus-one-last'].value.trim() : '',
+      plusOneDietary: bringing ? form['plus-one-dietary'].value : '',
+      address1: form['address1'].value.trim(),
+      address2: form['address2'].value.trim(),
+      city: form['city'].value.trim(),
+      state: form['state'].value,
+      zip: form['zip'].value.trim()
     };
     // native `required` accepts whitespace-only input; the server won't
-    var requiredIds = ['first-name', 'last-name', 'company', 'role', 'phone', 'email'];
+    var requiredIds = ['first-name', 'last-name', 'company', 'role', 'phone', 'email', 'address1', 'city', 'zip'];
+    if (bringing) requiredIds.push('plus-one-first', 'plus-one-last');
     for (var ri = 0; ri < requiredIds.length; ri++) {
       var reqEl = document.getElementById(requiredIds[ri]);
       if (!reqEl.value.trim()) {

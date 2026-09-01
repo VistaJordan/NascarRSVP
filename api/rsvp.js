@@ -1,36 +1,7 @@
-import { neon } from '@neondatabase/serverless';
-
-const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+import { DB_URL, getSql, ensureTable } from './_lib/db.js';
 
 const DIETARY = ['none', 'vegetarian', 'vegan', 'gluten-free', 'halal', 'kosher', 'other'];
-
-async function ensureTable(sql) {
-  try {
-    await createTable(sql);
-  } catch (err) {
-    // two cold starts can race CREATE TABLE IF NOT EXISTS; the loser's
-    // duplicate-key error is harmless once the winner has created the table
-    if (!/already exists|duplicate key/i.test(String(err))) throw err;
-  }
-}
-
-async function createTable(sql) {
-  await sql`
-    CREATE TABLE IF NOT EXISTS rsvps (
-      id SERIAL PRIMARY KEY,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      rsvp TEXT NOT NULL,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      company TEXT NOT NULL,
-      role TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      email TEXT NOT NULL,
-      dietary TEXT,
-      dietary_notes TEXT,
-      assistance TEXT
-    )`;
-}
+const STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'];
 
 function str(v, max) {
   if (typeof v !== 'string') return null;
@@ -68,17 +39,40 @@ export default async function handler(req, res) {
   const dietaryNotes = optStr(b.dietaryNotes, 500);
   const assistance = optStr(b.assistance, 2000);
 
+  const plusOne = b.plusOne === true;
+  const plusOneFirstName = plusOne ? str(b.plusOneFirstName, 200) : '';
+  const plusOneLastName = plusOne ? str(b.plusOneLastName, 200) : '';
+  const plusOneDietary = plusOne ? (DIETARY.includes(b.plusOneDietary) ? b.plusOneDietary : 'other') : '';
+
+  const address1 = str(b.address1, 200);
+  const address2 = optStr(b.address2, 200);
+  const city = str(b.city, 100);
+  const state = STATES.includes(b.state) ? b.state : null;
+  const zip = typeof b.zip === 'string' && /^\d{5}(-\d{4})?$/.test(b.zip.trim()) ? b.zip.trim() : null;
+
   if (!rsvp || !firstName || !lastName || !company || !role || !phone || !email ||
-      dietaryNotes === null || assistance === null || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      dietaryNotes === null || assistance === null ||
+      plusOneFirstName === null || plusOneLastName === null ||
+      !address1 || address2 === null || !city || !state || !zip ||
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid submission' });
   }
 
   try {
-    const sql = neon(DB_URL);
+    const sql = getSql();
     await ensureTable(sql);
     await sql`
-      INSERT INTO rsvps (rsvp, first_name, last_name, company, role, phone, email, dietary, dietary_notes, assistance)
-      VALUES (${rsvp}, ${firstName}, ${lastName}, ${company}, ${role}, ${phone}, ${email}, ${dietary}, ${dietaryNotes}, ${assistance})`;
+      INSERT INTO rsvps (
+        rsvp, first_name, last_name, company, role, phone, email,
+        dietary, dietary_notes, assistance,
+        plus_one, plus_one_first_name, plus_one_last_name, plus_one_dietary,
+        address1, address2, city, state, zip
+      ) VALUES (
+        ${rsvp}, ${firstName}, ${lastName}, ${company}, ${role}, ${phone}, ${email},
+        ${dietary}, ${dietaryNotes}, ${assistance},
+        ${plusOne}, ${plusOneFirstName}, ${plusOneLastName}, ${plusOneDietary},
+        ${address1}, ${address2}, ${city}, ${state}, ${zip}
+      )`;
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('rsvp insert failed:', err);

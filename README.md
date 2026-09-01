@@ -34,6 +34,14 @@ Postgres storage, and a private admin dashboard.
 ## Use
 
 - Send guests the deployment URL (the email invite links here).
+- **Per-client invites:** give each client their own link —
+  `https://rsvp.seamlessfm.com/?c=<client>` (lowercase letters, numbers, hyphens).
+  The confirmation screen plays `drift/<client>.mp4` — that client's store-drift
+  celebration — falling back to `drift/default.mp4` if no clip exists, and the
+  response row is tagged with the invite slug in the admin view.
+  To add a client: generate their clip (see the Drift Clip Playbook), process it
+  (watermark removal + compression, per Media pipeline below), save it as
+  `drift/<client>.mp4`, push.
 - Open `/admin.html`, enter the `ADMIN_KEY`, and you get live stats
   (yes / no / dietary needs / assistance requests), the full response table,
   CSV export, and per-row delete.

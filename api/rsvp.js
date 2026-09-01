@@ -56,6 +56,7 @@ export default async function handler(req, res) {
   const state = legacyNoAddress ? null : (STATES.includes(b.state) ? b.state : null);
   const zip = legacyNoAddress ? null : (typeof b.zip === 'string' && /^\d{5}(-\d{4})?$/.test(b.zip.trim()) ? b.zip.trim() : null);
   const addressOk = legacyNoAddress || (address1 && address2 !== null && city && state && zip);
+  const inviteClient = typeof b.client === 'string' && /^[a-z0-9-]{1,40}$/.test(b.client) ? b.client : '';
 
   if (!rsvp || !firstName || !lastName || !company || !role || !phone || !email ||
       dietaryNotes === null || assistance === null ||
@@ -73,12 +74,12 @@ export default async function handler(req, res) {
         rsvp, first_name, last_name, company, role, phone, email,
         dietary, dietary_notes, assistance,
         plus_one, plus_one_first_name, plus_one_last_name, plus_one_dietary,
-        address1, address2, city, state, zip
+        address1, address2, city, state, zip, invite_client
       ) VALUES (
         ${rsvp}, ${firstName}, ${lastName}, ${company}, ${role}, ${phone}, ${email},
         ${dietary}, ${dietaryNotes}, ${assistance},
         ${plusOne}, ${plusOneFirstName}, ${plusOneLastName}, ${plusOneDietary},
-        ${address1}, ${address2}, ${city}, ${state}, ${zip}
+        ${address1}, ${address2}, ${city}, ${state}, ${zip}, ${inviteClient}
       )`;
     return res.status(200).json({ ok: true });
   } catch (err) {

@@ -39,7 +39,8 @@ async function migrate(sql) {
       address2 TEXT,
       city TEXT,
       state TEXT,
-      zip TEXT
+      zip TEXT,
+      invite_client TEXT
     )`;
   // columns added after launch — bring a pre-existing table up to date
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS plus_one BOOLEAN NOT NULL DEFAULT false`;
@@ -51,4 +52,5 @@ async function migrate(sql) {
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS city TEXT`;
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS state TEXT`;
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS zip TEXT`;
+  await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS invite_client TEXT`;
 }

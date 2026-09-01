@@ -119,7 +119,7 @@
 
   /* table */
   .tbl-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--card);}
-  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1320px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:1400px;}
   th{
     position:sticky;top:0;background:var(--navy);
     text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
@@ -218,7 +218,7 @@
         <thead>
           <tr>
             <th>Received</th><th>Name</th><th>Company</th><th>Role</th><th>Phone</th>
-            <th>Email</th><th>RSVP</th><th>Plus-one</th><th>Address</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
+            <th>Email</th><th>RSVP</th><th>Invite</th><th>Plus-one</th><th>Address</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
           </tr>
         </thead>
         <tbody id="tblBody"></tbody>
@@ -320,6 +320,7 @@
         '<td class="num">' + esc(r.phone) + '</td>' +
         '<td>' + esc(r.email) + '</td>' +
         '<td><span class="badge ' + (r.rsvp === 'yes' ? 'yes">Locked in' : 'no">Declined') + '</span></td>' +
+        '<td>' + esc(r.invite_client || '—') + '</td>' +
         '<td>' + (r.plus_one
           ? esc(((r.plus_one_first_name || '') + ' ' + (r.plus_one_last_name || '')).trim() +
                 (r.plus_one_dietary && r.plus_one_dietary !== 'none' ? ' · ' + r.plus_one_dietary : ''))
@@ -392,12 +393,12 @@
     return '"' + s.replace(/"/g, '""') + '"';
   }
   document.getElementById('csvBtn').addEventListener('click', function(){
-    var head = ['received','first_name','last_name','company','role','phone','email','rsvp',
+    var head = ['received','first_name','last_name','company','role','phone','email','rsvp','invite_client',
                 'plus_one','plus_one_first_name','plus_one_last_name','plus_one_dietary',
                 'address1','address2','city','state','zip','dietary','dietary_notes','assistance'];
     var lines = [head.join(',')].concat(rowsCache.map(function(r){
       return [r.created_at, r.first_name, r.last_name, r.company, r.role, r.phone,
-              r.email, r.rsvp, r.plus_one ? 'yes' : 'no', r.plus_one_first_name, r.plus_one_last_name,
+              r.email, r.rsvp, r.invite_client, r.plus_one ? 'yes' : 'no', r.plus_one_first_name, r.plus_one_last_name,
               r.plus_one_dietary, r.address1, r.address2, r.city, r.state, r.zip,
               r.dietary, r.dietary_notes, r.assistance].map(csvCell).join(',');
     }));

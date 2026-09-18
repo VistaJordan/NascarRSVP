@@ -218,7 +218,7 @@
         <thead>
           <tr>
             <th>Received</th><th>Name</th><th>Company</th><th>Role</th><th>Phone</th>
-            <th>Email</th><th>RSVP</th><th>Invite</th><th>Plus-one</th><th>Address</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
+            <th>Email</th><th>RSVP</th><th>Invite</th><th>Source</th><th>Plus-one</th><th>Address</th><th>Dietary</th><th>Notes</th><th>Assistance</th><th></th>
           </tr>
         </thead>
         <tbody id="tblBody"></tbody>
@@ -321,6 +321,7 @@
         '<td>' + esc(r.email) + '</td>' +
         '<td><span class="badge ' + (r.rsvp === 'yes' ? 'yes">Locked in' : 'no">Declined') + '</span></td>' +
         '<td>' + esc(r.invite_client || '—') + '</td>' +
+        '<td>' + esc(r.source || 'This site') + '</td>' +
         '<td>' + (r.plus_one
           ? esc(((r.plus_one_first_name || '') + ' ' + (r.plus_one_last_name || '')).trim() +
                 (r.plus_one_dietary && r.plus_one_dietary !== 'none' ? ' · ' + r.plus_one_dietary : ''))
@@ -329,7 +330,7 @@
         '<td>' + esc(r.dietary || '—') + '</td>' +
         '<td>' + esc(r.dietary_notes || '—') + '</td>' +
         '<td>' + esc(r.assistance || '—') + '</td>' +
-        '<td><button class="del" type="button" data-id="' + parseInt(r.id, 10) + '">Delete</button></td>' +
+        '<td>' + (r.source ? '' : '<button class="del" type="button" data-id="' + parseInt(r.id, 10) + '">Delete</button>') + '</td>' +
       '</tr>';
     }).join('');
   }
@@ -339,13 +340,30 @@
     if (!key) { showGate(''); return; }
     tblState.hidden = false;
     tblState.textContent = 'Loading…';
-    fetch('/api/admin/rsvps', { headers: { 'Authorization': 'Bearer ' + key } })
+    var auth = { headers: { 'Authorization': 'Bearer ' + key } };
+    fetch('/api/admin/rsvps', auth)
       .then(function(r){
         if (r.status === 401) { showGate('That key was rejected — try again.'); throw new Error('unauthorized'); }
         if (!r.ok) return r.json().then(function(j){ throw new Error(j.error || 'Request failed'); });
         return r.json();
       })
-      .then(function(j){ showDash(); render(j.rows || []); })
+      .then(function(local){
+        // partner site's responses (read-only, see api/admin/remote.js) —
+        // if that call fails, this site's rows still render with a note
+        return fetch('/api/admin/remote', auth)
+          .then(function(r){ return r.json().then(function(j){ return r.ok ? j : { error: j.error || ('HTTP ' + r.status) }; }); })
+          .catch(function(){ return { error: 'could not reach partner site' }; })
+          .then(function(remote){
+            var rows = (local.rows || []).concat(remote.rows || []);
+            rows.sort(function(a, b){ return new Date(b.created_at) - new Date(a.created_at); });
+            showDash();
+            render(rows);
+            if (remote.error) {
+              tblState.hidden = false;
+              tblState.textContent = 'Partner responses unavailable: ' + remote.error;
+            }
+          });
+      })
       .catch(function(err){
         if (err.message === 'unauthorized') return;
         // keep the previously rendered rows so the table, tiles, and CSV
@@ -393,12 +411,12 @@
     return '"' + s.replace(/"/g, '""') + '"';
   }
   document.getElementById('csvBtn').addEventListener('click', function(){
-    var head = ['received','first_name','last_name','company','role','phone','email','rsvp','invite_client',
+    var head = ['received','first_name','last_name','company','role','phone','email','rsvp','invite_client','source',
                 'plus_one','plus_one_first_name','plus_one_last_name','plus_one_dietary',
                 'address1','address2','city','state','zip','dietary','dietary_notes','assistance'];
     var lines = [head.join(',')].concat(rowsCache.map(function(r){
       return [r.created_at, r.first_name, r.last_name, r.company, r.role, r.phone,
-              r.email, r.rsvp, r.invite_client, r.plus_one ? 'yes' : 'no', r.plus_one_first_name, r.plus_one_last_name,
+              r.email, r.rsvp, r.invite_client, r.source || 'This site', r.plus_one ? 'yes' : 'no', r.plus_one_first_name, r.plus_one_last_name,
               r.plus_one_dietary, r.address1, r.address2, r.city, r.state, r.zip,
               r.dietary, r.dietary_notes, r.assistance].map(csvCell).join(',');
     }));

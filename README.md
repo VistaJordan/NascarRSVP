@@ -13,6 +13,7 @@ Postgres storage, and a private admin dashboard.
 | `admin.html` | Admin dashboard: response stats, table, CSV export, delete |
 | `api/rsvp.js` | `POST /api/rsvp` — validates and stores a submission |
 | `api/admin/rsvps.js` | `GET`/`DELETE /api/admin/rsvps` — list/remove responses (Bearer `ADMIN_KEY`) |
+| `api/admin/remote.js` | `GET /api/admin/remote` — read-only responses from a partner deployment, merged into the dashboard |
 | `logo.webp` | Header logo (white-on-transparent lockup) |
 | `Site/frames/` | Source WebP frames for the scroll animation (not deployed) |
 | `Design Options/` | The five original design mockups (not deployed) |
@@ -30,6 +31,11 @@ Postgres storage, and a private admin dashboard.
 3. **Admin key** — *Settings → Environment Variables*: add `ADMIN_KEY` with a long
    random value (this is the password for `admin.html`).
 4. Redeploy after adding the env vars.
+5. **Partner responses (optional)** — to also show RSVPs collected by a partner
+   deployment of this site, add `REMOTE_ADMIN_URL` (their site origin) and
+   `REMOTE_ADMIN_KEY` (a read-only key they issue) and redeploy. Rows appear in the
+   dashboard with a *Source* column and cannot be deleted from here. `REMOTE_LABEL`
+   optionally overrides the source name. Leave these unset to run standalone.
 
 ## Use
 

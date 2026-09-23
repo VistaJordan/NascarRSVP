@@ -53,4 +53,11 @@ async function migrate(sql) {
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS state TEXT`;
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS zip TEXT`;
   await sql`ALTER TABLE rsvps ADD COLUMN IF NOT EXISTS invite_client TEXT`;
+  // one guest = one row. Any duplicate that predates the unique index is
+  // resolved keep-newest (highest id) so the index can build; from then on
+  // resubmissions become updates via ON CONFLICT in api/rsvp.js
+  await sql`
+    DELETE FROM rsvps a USING rsvps b
+    WHERE lower(a.email) = lower(b.email) AND a.id < b.id`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS rsvps_email_unique ON rsvps (lower(email))`;
 }

@@ -80,7 +80,29 @@ export default async function handler(req, res) {
         ${dietary}, ${dietaryNotes}, ${assistance},
         ${plusOne}, ${plusOneFirstName}, ${plusOneLastName}, ${plusOneDietary},
         ${address1}, ${address2}, ${city}, ${state}, ${zip}, ${inviteClient}
-      )`;
+      )
+      ON CONFLICT (lower(email)) DO UPDATE SET
+        created_at = now(),
+        rsvp = EXCLUDED.rsvp,
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        company = EXCLUDED.company,
+        role = EXCLUDED.role,
+        phone = EXCLUDED.phone,
+        email = EXCLUDED.email,
+        dietary = EXCLUDED.dietary,
+        dietary_notes = EXCLUDED.dietary_notes,
+        assistance = EXCLUDED.assistance,
+        plus_one = EXCLUDED.plus_one,
+        plus_one_first_name = EXCLUDED.plus_one_first_name,
+        plus_one_last_name = EXCLUDED.plus_one_last_name,
+        plus_one_dietary = EXCLUDED.plus_one_dietary,
+        address1 = COALESCE(EXCLUDED.address1, rsvps.address1),
+        address2 = COALESCE(EXCLUDED.address2, rsvps.address2),
+        city = COALESCE(EXCLUDED.city, rsvps.city),
+        state = COALESCE(EXCLUDED.state, rsvps.state),
+        zip = COALESCE(EXCLUDED.zip, rsvps.zip),
+        invite_client = EXCLUDED.invite_client`;
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('rsvp insert failed:', err);
